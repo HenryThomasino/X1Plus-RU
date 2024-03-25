@@ -7,28 +7,13 @@
 The rest of this file has boring stuff for really big nerds who want to
 develop X1Plus.
 
-## Development instructions
+## Инструкции по разработке
 
-Ok, don't say I didn't warn you.  Anyway, hi!  Glad you're interested in
-contributing to X1Plus!  Here is a bunch of information on how to build it,
-how it's structured internally, and various things you might need to know
-about how to make changes and how to contribute back.  X1Plus is the result
-of a year or so of vaguely-structured work; it started life as a fairly
-frumious hack, and over the past few months, we've been working hard to try
-to clean it up for release to the outside world.  All that said, there are
-parts that you will find are still a mess, and for that, we're truly sorry! 
-We hope you'll come play around with it anyway.  There's a lot of fun stuff
-to be done, and we have only barely scratched the surface so far.
+Хорошо, не говорите, что я вас не предупреждал. В любом случае, привет! Рад, что вы заинтересованы в участии в X1Plus! Вот куча информации о том, как его построить, как он структурирован внутри, а также различные вещи, которые вам, возможно, понадобится знать о том, как вносить изменения и как вносить свой вклад. X1Plus — результат года или около того нечетко структурированной работы; он начал свою жизнь как довольно грубый хак, и в течение последних нескольких месяцев мы усердно работали, пытаясь очистить его и выпустить во внешний мир. Тем не менее, некоторые детали все еще находятся в беспорядке, и нам очень жаль! Мы надеемся, что вы все равно поиграетесь с этим. Нам предстоит сделать много интересного, и мы пока лишь слегка коснулись поверхности.
 
-### How do I get started?
+### Как мне начать?
 
-Probably the easiest way to get started building X1Plus is in a Docker
-container.  If you're adventurous, you can probably build X1Plus on any old
-Linux machine (I do), but if you do that and it breaks, we really don't want
-to hear about it, so you really should just build it in Docker.  You'll need
-the filesystem decryption key from a live printer (running either X1Plus or
-the Official Rootable Firmware) in order to build X1Plus; try something
-like:
+Вероятно, самый простой способ начать сборку X1Plus — использовать контейнер Docker. Если вы любите приключения, вы, вероятно, сможете собрать X1Plus на любой старой машине с Linux (я так и делаю), но если вы сделаете это, и он сломается, мы действительно не хотим об этом слышать, поэтому вам действительно следует просто собрать его в Docker. . Для сборки X1Plus вам понадобится ключ дешифрования файловой системы от работающего принтера (на котором работает X1Plus или официальная корневая прошивка); попробуйте что-то вроде:
 
 ```
 $ git clone ...
@@ -41,155 +26,53 @@ $ ssh root@bambu /tmp/getkey >> localconfig.mk
 $ docker run -u `id -u` -v `pwd`:/work x1plusbuild make
 ```
 
-With some luck, you should get a `.x1p` file in your working directory!  You
-can copy that to your SD card (`scp` it over -- never remove an SD card from
-a live X1Plus system, you goofball), reboot your printer, and install it
-from the menu.
+Если повезет, вы должны получить `.x1p` файл в своем рабочем каталоге! Вы можете скопировать это на свою SD-карту ( `scp` она поверх — никогда не извлекайте SD-карту из работающей системы X1Plus, дурак), перезагрузить принтер и установить ее из меню.
 
-If you're going to make changes to any of the UI files, you should really
-read the rest of this document...  otherwise you might be in for a nasty
-surprise next time you `git pull`.
+Если вы собираетесь внести изменения в какой-либо файл пользовательского интерфейса, вам обязательно следует прочитать остальную часть этого документа... иначе в следующий раз вас может ожидать неприятный сюрприз `git pull`.
 
-### How does X1Plus work, from the printer's perspective?
+### Как работает X1Plus с точки зрения принтера?
 
-The core concept of X1Plus is that we build an overlay on top of the Bambu
-Lab firmware, and replace only the parts that we need in order to launch
-X1Plus.  We are very careful not to redistribute any of Bambu Lab's IP
-directly; when it's necessary to use or patch Bambu Lab binaries, we
-download them directly from Bambu Lab servers, and then patch them onboard
-the printer.  We also try to be pretty careful to leave the printer in a
-"fail-safe" state by modifying as little of the on-printer flash as
-possible.  Below is a rough flow of how X1Plus works, from installer through
-to normal boot.
+Основная концепция X1Plus заключается в том, что мы создаем оверлей поверх прошивки Bambu Lab и заменяем только те части, которые нам нужны для запуска X1Plus. Мы очень осторожны и не распространяем напрямую какую-либо интеллектуальную собственность Bambu Lab; когда необходимо использовать или исправлять двоичные файлы Bambu Lab, мы загружаем их непосредственно с серверов Bambu Lab, а затем исправляем их на принтере. Мы также стараемся быть очень осторожными и оставлять принтер в «отказоустойчивом» состоянии, изменяя как можно меньше флэш-памяти принтера. Ниже приведен пример работы X1Plus: от установки до обычной загрузки.
 
-**Host-side installer.**  The host-side installer is an Electron app that
-wraps all the logic to check whether the printer is running a supported
-version of the base firmware, and that wraps the mechanics of logging into
-the printer over MQTT, over FTP, and over SSH.  (In development versions of
-X1Plus that relied on exploits to install, the PC-side installer was
-somewhat more complicated!)  Roughly, this is implemented in
-`installer-clientside/install-gui/src/index.ts`.
+Установщик на стороне хоста. Установщик на стороне хоста — это приложение Electron, в котором реализована вся логика проверки того, работает ли на принтере поддерживаемая версия базовой прошивки, а также механизм входа в принтер через MQTT, FTP и SSH. (В разрабатываемых версиях X1Plus, для установки которых требовались эксплойты, установщик на стороне ПК был несколько сложнее!) Примерно это реализовано в `installer-clientside/install-gui/src/index.ts`.
 
-The installer copies an `.x1p` image to the SD card, as well as a small
-tarball containing the on-printer install GUI stub.  It SSHes to the
-printer, unpacks the tarball into `/userdata` on the printer, and runs a
-first-stage installer launch script that it (hopefully) unpacked; then, it
-waits for MQTT messages that indicate the progress of the installation.
+Установщик копирует `.x1p` образ на SD-карту, а также небольшой архив, содержащий заглушку графического интерфейса установки на принтере. Он подключается к принтеру по SSH, распаковывает архив `/userdata` на принтере и запускает сценарий запуска установщика первого этапа, который он (надеюсь) распаковал; затем он ожидает сообщений MQTT, указывающих ход установки.
 
-**First-stage install scripts.**  The first-stage installer (implemented in
-`installer-clientside/stage1/x1plus/launch.sh`) first shuts down the
-printer's service checker (otherwise, the GUI would get restarted!), and
-then shuts down the GUI.  It drops a marker for the host-side installer to
-indicate that it has started up, and then relaunches the printer's GUI
-engine with X1Plus's setup GUI injected into it to replace the normal
-printer GUI.
+Скрипты установки первого этапа. Программа установки первого этапа (реализованная в `installer-clientside/stage1/x1plus/launch.sh`) сначала отключает программу проверки обслуживания принтера (в противном случае графический интерфейс будет перезапущен!), а затем закрывает графический интерфейс. Он добавляет маркер для установщика на стороне хоста, чтобы указать, что он запустился, а затем перезапускает механизм графического интерфейса принтера с внедренным в него графическим интерфейсом настройки X1Plus, чтобы заменить обычный графический интерфейс принтера.
 
-**X1Plus setup GUI.** The precise mechanism by which we inject code into the
-GUI is interesting, but it is somewhat getting ahead of ourselves to discuss
-it exactly at this moment :) I'll talk about that in a moment.  For now, all
-you really need to know is that this is implemented in QML, with
-`bbl_screen-patch/kexec_ui/printerui/qml/Screen.qml` as the initial item
-(the C++ native components live in `bbl_screen-patch/interpose.cpp`).  As
-you might suspect from the name, this GUI is also part of the X1Plus boot
-process, but the first-stage installer launches it in such a way that the
-GUI goes straight into the installer screen.  The installer mechanism, the
-`SelectX1pPage`, looks for `.x1p` images on the SD card, and asks the user
-which `x1p` to install.  (An `x1p` is just a zip file that has an
-`info.json` and a `payload.tar.gz` in it.) Once the user chooses an `x1p`
-file, `InstallingPage` unpacks the `payload.tar.gz` into `/userdata`,
-invokes the Python-based install backend, and begins listening for DDS
-messages with status updates.  (DDS is an internal pubsub message bus.)
+Графический интерфейс настройки X1Plus. Точный механизм, с помощью которого мы внедряем код в графический интерфейс, интересен, но обсуждать его именно сейчас мы несколько забегаем вперед :) Я расскажу об этом через минуту. На данный момент все, что вам действительно нужно знать, это то, что это реализовано в QML в `bbl_screen-patch/kexec_ui/printerui/qml/Screen.qml` качестве начального элемента (родные компоненты C++ находятся в файлах `bbl_screen-patch/interpose.cpp`). Как можно догадаться по названию, этот графический интерфейс также является частью процесса загрузки X1Plus, но установщик первого этапа запускает его таким образом, что графический интерфейс переходит прямо на экран установщика. Механизм установки `SelectX1pPage` ищет `.x1p` изображения на SD-карте и спрашивает пользователя, какое из них x1pустановить. (An `x1p` — это просто zip-файл, в котором есть символы info.jsonи payload.tar.gz.) Как только пользователь выбирает x1p файл, InstallingPageраспаковывает его `payload.tar.gz` в `/userdata`, вызывает серверную часть установки на основе Python и начинает прослушивать сообщения DDS с обновлениями статуса. (DDS — это внутренняя шина сообщений pubsub.)
 
-**Python install backend.** The mechanics of what the Python installer does
-is probably better served by reading the code for it, which is in
-`installer/install.py`.  We drop a precompiled version of Python into
-`/userdata`, and to communicate with the DDS message bus, we use `ctypes` to
-talk to the DDS system libraries.  Roughly, the Python installer:
+Серверная часть установки Python. Механизм работы установщика Python, вероятно, лучше понять, прочитав его код, который находится в формате `installer/install.py`. Мы помещаем предварительно скомпилированную версию Python в систему `/userdata` и для связи с шиной сообщений DDS используем `ctypes` системные библиотеки DDS. Грубо говоря, установщик Python:
 
-* checks to make sure that the printer's device tree is known and
-  compatible;
-* backs up a few printer configuration objects to the SD card;
-* downloads an original firmware from Bambu Lab;
-* decrypts it and decompresses it, unpacks the ext2 filesystem image, and
-  then repacks that filesystem as a squashfs on the SD card;
-* creates an ext4 loopback file on the SD card;
-* copies an overlay squashfs and a kernel to the SD card;
-* writes a bootloader stub to the printer's internal filesystem;
-* and reports success, and offers to reboot.
+* проверяет, известно ли и совместимо ли дерево устройств принтера;
+* резервное копирование нескольких объектов конфигурации принтера на SD-карту;
+* скачивает оригинальную прошивку с сайта Bambu Lab;
+* расшифровывает и распаковывает его, распаковывает образ файловой системы ext2, а затем переупаковывает эту файловую систему как squshfs на SD-карте;
+* создает файл обратной связи ext4 на SD-карте;
+* копирует оверлей sqashfs и ядро ​​на SD-карту;
+* записывает заглушку загрузчика во внутреннюю файловую систему принтера;
+* и сообщает об успехе, и предлагает перезагрузиться.
 
-(You can read the details of each of those in the Python installer itself.)
-When installation is complete, the printer reboots into the slightly
-modified internal filesystem.
+(Подробную информацию о каждом из них можно прочитать в самом установщике Python.) По завершении установки принтер перезагружается в слегка измененную внутреннюю файловую систему.
 
-**On boot: SD card check and GUI display.** When the printer powers up, it
-boots first into the onboard eMMC installation, as normal.  We inject a
-shell script into `/etc/init.d/S75kexec`, which subsequently launches
-`/opt/kexec/check_kexec`.  (Both of these scripts live in `internal-fs/` in
-this tree.) This script checks an "emergency override" (engaged by pressing
-and holding the POWER and ESTOP buttons while powering the printer up), and
-if those buttons are pressed, it quits as quickly as possible to return
-control to the internal printer firmware.  Otherwise, it launches the same
-GUI as was used in the X1Plus Setup process above, and offers to either boot
-into SD card firmware or run advanced options.  (Because it was launched
-from the actual boot process, the `dialog/KexecDialog` is presented, rather
-than the `SelectX1pPage`.)  If the user chooses to boot from the SD card,
-the shell script `/opt/kexec/boot` runs and prepares to boot the printer
-into the new kernel.
+При загрузке: проверка SD-карты и отображение графического интерфейса. Когда принтер включается, он сначала загружается со встроенной установкой eMMC, как обычно. Мы внедряем в него скрипт оболочки /etc/init.d/S75kexec, который впоследствии запускает `/opt/kexec/check_kexec`. (Оба этих сценария находятся в `internal-fs/`этом дереве.) Этот сценарий проверяет «аварийное отключение» (включается нажатием и удержанием кнопок POWER и ESTOP при включении принтера), и если эти кнопки нажаты, он завершает работу так же быстро, как возможно вернуть управление внутренней прошивке принтера. В противном случае он запускает тот же графический интерфейс, который использовался в процессе установки X1Plus выше, и предлагает либо загрузить прошивку SD-карты, либо запустить дополнительные параметры. (Поскольку он был запущен в ходе фактического процесса загрузки, `dialog/KexecDialog` вместо него отображается `SelectX1pPage`.) Если пользователь выбирает загрузку с SD-карты, `/opt/kexec/boot` запускается сценарий оболочки и готовится загрузить принтер в новое ядро.
 
-**kexec'ing into the new world.**  Things start getting weird here, and
-fast.  The net result of this stage is that we are going to reboot the
-printer into a custom-compiled kernel.  The process of doing so is rather
-unusual; because we can't convince the first-stage bootloader on the system
-to do our bidding (the kernel is signed from that perspective), we need to
-hot-reboot.  We perform the following steps in order to do this.
+Переход в новый мир. Здесь все начинает становиться странным, и очень быстро. Конечным результатом этого этапа является то, что мы собираемся перезагрузить принтер в специально скомпилированное ядро. Процесс этого довольно необычен; поскольку мы не можем убедить загрузчик первого этапа системы выполнить наши указания (ядро подписано с этой точки зрения), нам необходимо выполнить горячую перезагрузку. Для этого мы выполняем следующие шаги.
 
-* First, we hash the running kernel's device tree (or, at least, keys of it
-  that we care about) to make sure that we have an appropriate device tree
-  for the kernel that we are going to jump into.  We have a somewhat
-  modified device tree; since we want to patch in the printer's serial
-  number and similar things, we compile it at runtime using a `dtc` that we
-  have on the printer.  (This also chooses the correct includes to make sure
-  we light up the correct one of four possible LCD panels that the printer
-  could come with.)
-* We prepare a few other parameters for the new kernel, and its userspace,
-  including what we currently think the printer's serial number is, and
-  which filesystems we will want to mount when we come back up.
-* Now we start getting a little bit creative.  We want to use `kexec`, but
-  the Bambu Lab kernel does not have `kexec` built in; worse, `kexec` is
-  nominally only available as a compiled-in option, so we can't compile a
-  module for it from kernel sources.  Luckily for us, there have been a
-  series of attempts to make this work -- originally, [amonakov's
-  `kexec-module`](https://github.com/amonakov/kexec-module), and
-  subsequently, [fabianishere's
-  `kexec-mod-arm64`](https://github.com/fabianishere/kexec-mod)!  We build
-  on this work in `kexec-mod/`, where we port this kernel module to ARM32. 
-  Much of the Rockchip SoC gets astonishingly angry if hot-rebooted; we very
-  carefully reset large chunks of the SoC's state in
-  `kexec-mod/kernel/arch/arm/machine_kexec_drv.c`.  To get access to many of
-  the symbols we need, even if they are not `EXPORT_SYMBOL`, we bootstrap
-  with `kallsyms_lookup_name` (which we, uh, grab from `/proc/kallsyms`).
-* We load a kernel from the SD card, load our compiled device tree, load an
-  initramfs from the SD card, and then have `kexec` do its thing; away we
-  go, sailing into the New World.
+* Во-первых, мы хешируем дерево устройств работающего ядра (или, по крайней мере, его ключи, которые нас интересуют), чтобы убедиться, что у нас есть подходящее дерево устройств для ядра, к которому мы собираемся перейти. У нас есть несколько измененное дерево устройств; поскольку мы хотим внести исправления в серийный номер принтера и тому подобные вещи, мы компилируем его во время выполнения, используя файл, `dtc` который есть на принтере. (При этом также выбираются правильные включения, чтобы убедиться, что мы освещаем правильную одну из четырех возможных ЖК-панелей, которые могут быть в комплекте с принтером.)
+* Мы подготавливаем несколько других параметров для нового ядра и его пользовательского пространства, включая то, что, по нашему мнению, представляет собой серийный номер принтера, и какие файловые системы мы хотим смонтировать, когда снова запустимся.
+* Теперь мы начинаем проявлять немного творчества. Мы хотим использовать , но в kexecядре Bambu Lab его нет ; `kexec` Хуже того, kexecноминально он доступен только в виде скомпилированной опции, поэтому мы не можем скомпилировать для него модуль из исходников ядра. К счастью для нас, была серия попыток осуществить эту работу — сначала Амонакова `kexec-module` , а затем Фабианишера `kexec-mod-arm64` ! Мы развиваем эту работу в `kexec-mod/`, где портируем этот модуль ядра на ARM32. Большая часть SoC Rockchip ужасно злится при горячей перезагрузке; мы очень тщательно сбрасываем большие фрагменты состояния SoC в `kexec-mod/kernel/arch/arm/machine_kexec_drv.c`. Чтобы получить доступ ко многим нужным нам символам, даже если они не являются `EXPORT_SYMBOL`, мы загружаемся с ними `kallsyms_lookup_name`(которые мы, хм, получаем из /proc/kallsyms).
+* Мы загружаем ядро ​​с SD-карты, загружаем наше скомпилированное дерево устройств, загружаем `initramfs` с SD-карты и затем делаем kexecсвое дело; мы уходим, плывя в Новый Свет.
 
-**Setting up the overlays in the initramfs.**  Once the new kernel boots,
-the first userspace code that executes is an initramfs, with init being a
-shellscript that lives, oddly enough, in `initramfs/init`.  We start off by
-painting a cute logo, and setting a larger font on screen.  Then, roughly,
-we:
+Настройка оверлеев в initramfs. После загрузки нового ядра первым выполняемым кодом пользовательского пространства является initramfs, причем init представляет собой сценарий оболочки, который, как ни странно, находится в `initramfs/init`. Мы начнем с рисования симпатичного логотипа и установки более крупного шрифта на экране. Тогда, грубо говоря, мы:
 
-* Mount the SD card.  It should be FAT32; with particularly slow SD cards,
-  it might take a bit to enumerate.
-* Mount each of the base layers.  At compile and install time, we build a
-  bunch of squashfses: a Bambu Lab base image, a custom firmware overlay,
-  and a GUI patch overlay.
-* Mount the persistent overlay storage layer, which is an ext4fs that lives
-  in a file on the FAT32 partition.
-* Create an overlay that stacks up each of these into a single root
-  partition.  Bind the overlay around as needed, and then...
-* Transfer control to the "real" `init` process.
+* Подключите SD-карту. Это должна быть FAT32; с особенно медленными SD-картами перечисление может занять некоторое время.
+* Смонтируйте каждый из базовых слоев. Во время компиляции и установки мы создаем несколько сквош-файлов: базовый образ Bambu Lab, наложение пользовательской прошивки и наложение патча графического интерфейса.
+* Подключите постоянный слой оверлейного хранилища, который представляет собой ext4fs, который находится в файле в разделе FAT32.
+* Создайте наложение, которое объединит каждый из них в один корневой раздел. Прикрепите накладку по мере необходимости, а затем...
+* Перенесите управление на «реальный» `init` процесс.
 
-At the moment that `init` gets control, the filesystem looks like this:
+На момент `init` получения управления файловая система выглядит так:
 
 ```
 /             # Combined root filesystem, including all layers.
@@ -201,108 +84,58 @@ At the moment that `init` gets control, the filesystem looks like this:
 /mnt/overlay/bbl_screen-1.0.squashfs # Patched bbl_screen image
 ```
 
-**Booting the OS.**  OS boot is mostly unremarkable, but we do override some
-components of the base system.  See `images/cfw/etc/init.d/` for bits and
-pieces that we override.
+**Загрузка ОС. Загрузка ОС в основном ничем не примечательна, но мы переопределяем некоторые компоненты базовой системы. Посмотрите `images/cfw/etc/init.d/` на фрагменты, которые мы переопределяем.
 
-**Launching the patched GUI.**  Here is the other sort of "interesting and
-creative" bit of X1Plus: how we patch the GUI.  Our general goal is that we
-wish to redistribute as little of Bambu Lab's IP as possible, and instead,
-only redistribute our own modifications to it.  The mechanics of this is all
-handled by `bbl_screen-patch/`, which ultimately spits out a `printer_ui.so`
-that gets `LD_PRELOAD`ed into `bbl_screen`.  Here is the rough process from
-start to finish of how that happens; most of it happens at build time:
+**Запускаем исправленный GUI. Вот еще одна «интересная и креативная» часть X1Plus: как мы исправляем графический интерфейс. Наша общая цель состоит в том, чтобы распространять как можно меньше интеллектуальной собственности Bambu Lab и вместо этого распространять только наши собственные модификации. Механика всего этого обрабатывается `bbl_screen-patch/`, который в конечном итоге выдает файл `printer_ui.so` , который попадает `LD_PRELOAD` в `bbl_screen`. Вот приблизительный процесс от начала до конца того, как это происходит; большая часть этого происходит во время сборки:
 
-* We start by extracting all of the Qt resources from the original
-  `bbl_screen`.  We do this by statically looking up all of the callsites of
-  `qInitResources`, and then using the Unicorn Engine to emulate the
-  instructions leading up to them.  Once we know the arguments to each call
-  of `qInitResources`, we know the in-memory locations of each resource
-  bundle, and we traverse the Qt resource bundle hierarchy to extract each
-  bundle to its constituent files, and a `root.qrc` that can be later used
-  to recompile a resource bundle.  This all happens in `extract_qrc.py`.
-* Once we have unpacked the resource bundle to the `printer_ui-orig`
-  directory, we copy it to a new directory, and apply all of the patches in
-  the `patches/` folder, using `patcher.py`.  This creates a `printer_ui/`
-  with our new GUI bundle.
-* We then compile a resource bundle with `rcc`.  We also compile an
-  interposer that will intercept the appropriate call to `qInitResources`
-  and replace it with our resource bundle, as well as adding a handful of
-  other helpful C++ classes; this lives in `interpose.cpp`, which is at
-  least lightly commented.  All of these get linked together into a
-  `printer_ui.so`.
-* Because the `printer_ui.so` has a meaningful amount of original Bambu Lab
-  IP in it, we do not want to redistribute this directly; instead, we
-  distribute an `xdelta`-encoded patch from the original `bbl_screen`, which
-  we reassemble into a `printer_ui.so` at install time.
+* Начнем с извлечения всех ресурсов Qt из исходного файла `bbl_screen`. Мы делаем это, статически просматривая все сайты вызовов `qInitResources`, а затем используя Unicorn Engine для эмуляции инструкций, ведущих к ним. Как только мы узнаем аргументы для каждого вызова qInitResources, мы узнаем расположение каждого пакета ресурсов в памяти и проходим по иерархии пакетов ресурсов Qt, чтобы извлечь каждый пакет в составляющие его файлы, а root.qrcзатем можно использовать его для перекомпиляции ресурса. пучок. Все это происходит в `extract_qrc.py`.
+* Распаковав пакет ресурсов в `printer_ui-orig` каталог, мы копируем его в новый каталог и применяем все исправления в папке `patches/`, используя `patcher.py`. Это создаст `printer_ui/` наш новый пакет графического интерфейса.
+* Затем мы компилируем пакет ресурсов с помощью `rcc`. Мы также скомпилируем интерпозер, который перехватит соответствующий вызов `qInitResources` и заменит его нашим пакетом ресурсов, а также добавим несколько других полезных классов C++; это живет в `interpose.cpp`, что, по крайней мере, слегка комментируется. Все это объединяется в файл `printer_ui.so`.
+* Поскольку `printer_ui.so` в нем содержится значительное количество оригинальной IP-адреса Bambu Lab, мы не хотим распространять его напрямую; вместо этого мы распространяем xdeltaзакодированный патч из исходного файла `bbl_screen`, который мы собираем `printer_ui.so` во время установки.
 
-At last, you have a beautiful X1Plus splash screen!
+Наконец-то у вас есть красивая заставка X1Plus!
 
-### How does the X1Plus build system work?
+### Как работает система сборки X1Plus?
 
-This probably could use a fair bit more discussion, but in short, you should
-be able to just `make`.  I would describe it better, but it is really quite
-embarrassing.  The Electron installer app really is not integrated into the
-build system yet, and if you intend to hack on that, you should probably ask
-about it if you cannot decipher it already.
+Это, вероятно, требует более подробного обсуждения, но, короче говоря, вы должны быть в состоянии просто `make`. Я бы описал это лучше, но это действительно очень неловко. Приложение-установщик Electron на самом деле еще не интегрировано в систему сборки, и если вы собираетесь взломать его, вам, вероятно, следует спросить об этом, если вы уже не можете его расшифровать.
 
-One thing to think about is that, by default, `bbl_screen-patch/Makefile`
-will overwrite the `printer_ui` directory if it believes that the `patches`
-directory has changed.  This is great if you are just building from git, but
-if you are actually trying to make changes to the `printer_ui`, this is
-rather surprising behavior.  To avoid this, you can put `NO_AUTO_PATCH=yes`
-in your `localconfig.mk`.
+Следует подумать о том, что по умолчанию каталог `bbl_screen-patch/Makefile` будет перезаписан , `printer_ui` если он считает, что patches каталог изменился. Это здорово, если вы просто создаете код из git, но если вы на самом деле пытаетесь внести изменения в файл `printer_ui`, это довольно удивительное поведение. Чтобы избежать этого, вы можете добавить `NO_AUTO_PATCH=yes` свой `localconfig.mk`.
 
-You almost certainly want to build in Docker.
+Вы почти наверняка захотите создать Docker.
 
-### How do I contribute?
+### Как я могу внести свой вклад?
 
-For better or for worse, we do most of our development discussion in
-Discord.  Because of how much of a pain it is to merge `printer_ui` patches,
-please let other people know what you're working on!
+К лучшему или к худшему, большую часть обсуждения разработки мы проводим в Discord. Из-за того, что объединять патчи очень сложно `printer_ui`, пожалуйста, сообщите другим людям, над чем вы работаете!
 
-We work with pull requests and bug reports on GitHub.  Please reserve bug
-reports for actually triaged -- or, if not triaged, triageable -- bugs; if
-you have usage questions, please talk about those in "Discussions"!
+Мы работаем с запросами на включение и отчетами об ошибках на GitHub. Пожалуйста, зарезервируйте отчеты об ошибках для фактически отсортированных (или, если не отсортированных, то поддающихся сортировке) ошибок; Если у вас есть вопросы по использованию, задавайте их в «Обсуждениях»!
 
-Please be reasonable human beings to each other.  It is just a 3D printer. 
-If you have a problem, please chat with some of the maintainers and we will
-try to help you resolve it.
+Пожалуйста, будьте разумными людьми друг к другу. Это всего лишь 3D-принтер. Если у вас возникла проблема, поговорите с кем-нибудь из сопровождающих, и мы постараемся помочь вам ее решить.
 
-### Who is X1Plus?
+### Кто такой X1Plus?
 
-X1Plus was written by a small number of people, not all of whom wish to be
-publicly identified.  You might see a handful names around the code from
-people who don't mind sharing their identity, but there were many more
-people behind the scenes who have contributed over time!
+X1Plus был написан небольшим количеством людей, не все из которых хотели бы быть публично идентифицированы. В коде вы можете увидеть несколько имен людей, которые не против поделиться своей личностью, но за кулисами было гораздо больше людей, которые со временем внесли свой вклад!
 
-### Miscellaneous stuff
+### Разные вещи
 
-This probably ought go into a wiki page, but, you know, here we are.
+Наверное, это следовало бы разместить на вики-странице, но, знаете, мы здесь.
 
-#### Building a kernel
+#### Сборка ядра
 
-As of writing, it's not necessary to build a kernel image yourself as there's one present in
-`prebuilt`. But you can! This might be desirable to enable other kernel features for development, 
-or to build a kernel module against.
+На момент написания статьи нет необходимости собирать образ ядра самостоятельно, поскольку он присутствует в формате `prebuilt`. Но вы можете! Это может быть желательно для включения других функций ядра для разработки или для сборки модуля ядра.
 
-* Install prerequestites, including `lz4` for compressing the final image.
-* Install the appropriate toolchain.
-* Grab the latest kernel source from [our
-repository](https://github.com/X1Plus/x1-linux-kernel).
-* Ensure the toolchain is on your PATH, and add LDFLAGS/CCFLAGS to point to the toolchain (unsure
-how necessary this is):
+* Установите предварительные требования, в том числе lz4для сжатия конечного образа.
+* Установите соответствующую цепочку инструментов.
+* Загрузите последний исходный код ядра из нашего репозитория .
+* Убедитесь, что цепочка инструментов находится в вашем PATH, и добавьте LDFLAGS/CCFLAGS, чтобы указать на цепочку инструментов (не уверен, насколько это необходимо):
   ```
   export LDFLAGS="-L$TOOLCHAIN/gcc/linux-x86/arm/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf \
   -Larm-linux-gnueabihf/libc/usr/lib/ -L/usr/arm-linux-gnueabihf/lib/"
   export CCFLAGS="-I$TOOLCHAIN/include -I/usr/include"
   ```
-* From the root of kernel folder, run `make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- 
-O=build x1plus_defconfig`
-* Run `make mrproper`
-* CD into `build`
-* Run `sed -i 's/YYLTYPE yylloc/extern YYLTYPE yylloc/' ./scripts/dtc/dtc-lexer.lex.c`
-* Run `make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage` to build the kernel.
-  * You probably want to add `-jn` where `n` is the number of threads (logical cores) you have available
-  to dramatically speed up building (using all threads may slow down OS).
-  * Build output file is `arch/arm/boot/zImage` you can copy this over `prebuilt/kernel` to use it with this repo.
+* Из корня папки ядра запуститеmake `ARCH=arm` `CROSS_COMPILE=arm-linux-gnueabihf-`  `O=build x1plus_defconfig`
+* Пеереходим `make mrproper`
+* диск `build`
+* Переходим `sed -i 's/YYLTYPE yylloc/extern YYLTYPE yylloc/'`.`/scripts/dtc/dtc-lexer.lex.c`
+* Запускаем `make ARCH=arm` `CROSS_COMPILE=arm-linux-gnueabihf-` `zImage` сборку ядра.
+  * Вероятно, вы захотите добавить `-jn` количество nдоступных вам потоков (логических ядер), чтобы значительно ускорить сборку (использование всех потоков может замедлить работу ОС).
+  * Создайте выходной файл: `arch/arm/boot/zImage` вы можете скопировать его `prebuilt/kernel`, чтобы использовать с этим репозиторием.
