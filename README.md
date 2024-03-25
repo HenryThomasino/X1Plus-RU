@@ -1,4 +1,4 @@
-# X1Plus
+# X1Plus-RU
 
 ## Installation instructions
 
