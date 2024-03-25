@@ -1,11 +1,9 @@
 # X1Plus-RU
 
-## Installation instructions
+## Инструкции по установке
 
-*Welcome to X1Plus!*  If you're a user, you probably want to [go straight to
-the wiki]([https://github.com/X1Plus/X1Plus/wiki](https://github.com/HenryThomasino/X1Plus-RU/wiki)), which tells you everything
-you need to know about installing and using X1Plus on your printer.
-
+Добро пожаловать в X1Plus! Если вы пользователь, вы, вероятно, [захотите сразу перейти на вики](https://github.com/HenryThomasino/X1Plus-RU/wiki) , где рассказывается все, что вам нужно знать об установке и использовании X1Plus на вашем принтере.
+Остальная часть этого файла содержит скучные вещи для действительно больших ботаников, которые хотят разработать X1Plus.
 The rest of this file has boring stuff for really big nerds who want to
 develop X1Plus.
 
