@@ -9,3 +9,14 @@
 
 ## Как мне начать?
 Вероятно, самый простой способ начать сборку X1Plus — использовать контейнер Docker. Если вы любите приключения, вы, вероятно, сможете собрать X1Plus на любой старой машине с Linux (я так и делаю), но если вы сделаете это, и он сломается, мы действительно не хотим об этом слышать, поэтому вам действительно следует просто собрать его в Docker. . Для сборки X1Plus вам понадобится ключ дешифрования файловой системы от работающего принтера (на котором работает X1Plus или официальная корневая прошивка); попробуйте что-то вроде:
+
+```
+$ git clone ...
+$ cd X1Plus
+$ docker build -t x1plusbuild scripts/docker/
+$ docker run -u `id -u` -v `pwd`:/work x1plusbuild bash -c 'git config --global --add safe.directory /work'
+$ docker run -u `id -u` -v `pwd`:/work x1plusbuild make scripts
+$ scp scripts/getkey root@bambu:/tmp
+$ ssh root@bambu /tmp/getkey >> localconfig.mk
+$ docker run -u `id -u` -v `pwd`:/work x1plusbuild make
+```
