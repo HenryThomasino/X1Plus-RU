@@ -3,7 +3,7 @@
 ## Installation instructions
 
 *Welcome to X1Plus!*  If you're a user, you probably want to [go straight to
-the wiki](https://github.com/X1Plus/X1Plus/wiki), which tells you everything
+the wiki]([https://github.com/X1Plus/X1Plus/wiki](https://github.com/HenryThomasino/X1Plus-RU/wiki)), which tells you everything
 you need to know about installing and using X1Plus on your printer.
 
 The rest of this file has boring stuff for really big nerds who want to
